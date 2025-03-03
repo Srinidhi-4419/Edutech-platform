@@ -103,7 +103,7 @@ npm start or nodemon index.js
 - **Track Progress**: View your personalized dashboard with visual analytics.
 - **Ask Doubts**: Use the Groq-powered educational chatbot in the doubts section.
 ## Live website Url
-[Link to Demo Video]("frontend-9ox1wq4vb-kulkarnisrinidhi85-gmailcoms-projects.vercel.app")
+[Link to Demo Video](frontend-9ox1wq4vb-kulkarnisrinidhi85-gmailcoms-projects.vercel.app)
  ## Contributing
 Contributions are welcome! Please fork this repository, make your changes, and submit a pull request.
 
