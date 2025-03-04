@@ -104,6 +104,7 @@ npm start or nodemon index.js
 - **Ask Doubts**: Use the Groq-powered educational chatbot in the doubts section.
 ## Live website Url
 [Link to Demo Video](https://frontend-9ox1wq4vb-kulkarnisrinidhi85-gmailcoms-projects.vercel.app)
+Admin credentials- email:winners@gmail.com password:kings@4444
 
  ## Contributing
 Contributions are welcome! Please fork this repository, make your changes, and submit a pull request.
