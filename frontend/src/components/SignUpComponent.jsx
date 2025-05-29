@@ -71,6 +71,8 @@ const SignupComponent = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create account');
       }
+    
+      localStorage.setItem('userId', data.userId);
       
       // Show success toast
       toast.success('Account created successfully! Redirecting to dashboard...', {

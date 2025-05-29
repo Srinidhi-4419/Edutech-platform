@@ -11,11 +11,7 @@ const transcriptionRoutes = require("./routes/summariser"); // Added transcripti
 const app = express();
 
 // Middleware
-app.use(cors({
-    origin: "https://frontend-9ox1wq4vb-kulkarnisrinidhi85-gmailcoms-projects.vercel.app",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json()); // Parses JSON request bodies
 
 // Database Connection

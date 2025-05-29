@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import axios from 'axios';
 
 const Profile = () => {
   const [userData, setUserData] = useState({
@@ -17,44 +16,31 @@ const Profile = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Get userId from localStorage
-  const userId = localStorage.getItem('userId');
-
+  // Simulate data loading for demo
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        if (!userId) {
-          setError("User ID not found. Please login again.");
-          setLoading(false);
-          return;
-        }
-
         setLoading(true);
         
-        // Fetch user stats from backend
-        const statsResponse = await axios.get(`http://localhost:3000/api/user-journey/stats/${userId}`);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Process the data for the UI
+        // Set some sample data - you can modify this to test empty states
         const processedData = {
-          username: "learner123", // You might want to fetch this from a user profile API
-          joinDate: new Date().toISOString().split('T')[0], // Placeholder
-          totalWatchTime: statsResponse.data.totalWatchTime || 0,
-          videosWatched: statsResponse.data.videosWatched || 0,
-          completionRate: parseFloat(statsResponse.data.completionRate || 0),
-          categoriesWatched: Array.isArray(statsResponse.data.categoriesWatched) 
-            ? statsResponse.data.categoriesWatched.map(category => ({
-                ...category,
-                progress: Math.round(category.progress || 0)
-              }))
-            : [],
-          watchHistory: Array.isArray(statsResponse.data.recentVideos)
-            ? statsResponse.data.recentVideos.map(item => ({
-                videoTitle: item.video?.title || "Untitled Video",
-                watchDate: item.watchDate ? new Date(item.watchDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                percentCompleted: item.percentCompleted || 0,
-                category: item.video?.category || "Uncategorized"
-              }))
-            : []
+          username: "learner123",
+          joinDate: new Date().toISOString().split('T')[0],
+          totalWatchTime: 150, // minutes
+          videosWatched: 12,
+          completionRate: 78,
+          categoriesWatched: [
+            { category: "Mathematics", count: 5, progress: 65 },
+            { category: "Physics", count: 4, progress: 42 },
+            { category: "Computer Science", count: 3, progress: 38 }
+          ],
+          watchHistory: [
+            { videoTitle: "Introduction to Calculus", watchDate: "2024-10-18", percentCompleted: 100, category: "Mathematics" },
+            { videoTitle: "Newton's Laws of Motion", watchDate: "2024-10-19", percentCompleted: 95, category: "Physics" }
+          ]
         };
         
         setUserData(processedData);
@@ -67,17 +53,14 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, [userId]);
+  }, []);
 
   // Process data for charts
   const generateMonthlyData = () => {
-    // Group watch history by month
     const monthlyData = {};
     
-    // This is a simplified approach - in a real app, you would process actual timestamps
-    // from the watchHistory array to create accurate monthly aggregations
     userData.watchHistory.forEach(item => {
-      const month = item.watchDate.split('-')[1]; // Extract month from date (assuming YYYY-MM-DD)
+      const month = item.watchDate.split('-')[1];
       const monthName = new Date(`2024-${month}-01`).toLocaleString('default', { month: 'long' });
       
       if (!monthlyData[monthName]) {
@@ -85,20 +68,9 @@ const Profile = () => {
       }
       
       monthlyData[monthName].videos += 1;
-      // Assume each video contributes some watch time (simplified)
-      monthlyData[monthName].hours += (item.percentCompleted / 100) * 1; // Assuming average 1 hour per video
+      monthlyData[monthName].hours += (item.percentCompleted / 100) * 1;
     });
     
-    // If no data is available yet, provide sample data to match original design
-    if (Object.keys(monthlyData).length === 0) {
-      return [
-        { month: "October", videos: 25, hours: 20 },
-        { month: "November", videos: 32, hours: 26 },
-        { month: "December", videos: 10, hours: 8 }
-      ];
-    }
-    
-    // Convert to array and sort by month
     return Object.values(monthlyData);
   };
 
@@ -198,48 +170,33 @@ const Profile = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { category: "Mathematics", count: 28 },
-                      { category: "Physics", count: 17 },
-                      { category: "Computer Science", count: 14 },
-                      { category: "Chemistry", count: 8 }
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                    label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {[...Array(4)].map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="flex items-center justify-center h-48 text-gray-500">
+                No category data available yet
+              </div>
             )}
           </div>
           
           {/* Monthly activity */}
           <div className="bg-white p-4 rounded shadow md:col-span-2">
             <h2 className="text-lg font-semibold mb-4">Monthly Activity</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={monthlyActivityData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="hours" stroke="#8884d8" name="Hours Watched" />
-                <Line yAxisId="right" type="monotone" dataKey="videos" stroke="#82ca9d" name="Videos Completed" />
-              </LineChart>
-            </ResponsiveContainer>
+            {monthlyActivityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={monthlyActivityData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                  <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                  <Tooltip />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="hours" stroke="#8884d8" name="Hours Watched" />
+                  <Line yAxisId="right" type="monotone" dataKey="videos" stroke="#82ca9d" name="Videos Completed" />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-64 text-gray-500">
+                No activity data available yet
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -249,99 +206,63 @@ const Profile = () => {
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-lg font-semibold mb-4">Category Progress</h2>
           {userData.categoriesWatched && userData.categoriesWatched.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={userData.categoriesWatched}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="progress" fill="#8884d8" name="Progress %" />
-                <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Videos Watched" />
-              </BarChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={userData.categoriesWatched}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="category" />
+                  <YAxis yAxisId="left" orientation="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="progress" fill="#8884d8" name="Progress %" />
+                  <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Videos Watched" />
+                </BarChart>
+              </ResponsiveContainer>
+              
+              <div className="mt-6">
+                <h3 className="font-medium mb-3">Category Details</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr>
+                        <th className="p-3 border-b text-left">Category</th>
+                        <th className="p-3 border-b text-right">Videos Watched</th>
+                        <th className="p-3 border-b text-right">Progress</th>
+                        <th className="p-3 border-b text-right">Last Watched</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userData.categoriesWatched.map((category, index) => (
+                        <tr key={index}>
+                          <td className="p-3 border-b">{category.category}</td>
+                          <td className="p-3 border-b text-right">{category.count}</td>
+                          <td className="p-3 border-b text-right">
+                            <div className="flex items-center justify-end">
+                              <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
+                                <div 
+                                  className="bg-blue-600 h-2.5 rounded-full" 
+                                  style={{ width: `${category.progress}%` }}
+                                ></div>
+                              </div>
+                              {category.progress}%
+                            </div>
+                          </td>
+                          <td className="p-3 border-b text-right">
+                            {category.lastWatched ? new Date(category.lastWatched).toLocaleDateString() : "N/A"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={[
-                { category: "Mathematics", count: 28, progress: 65 },
-                { category: "Physics", count: 17, progress: 42 },
-                { category: "Computer Science", count: 14, progress: 38 },
-                { category: "Chemistry", count: 8, progress: 20 }
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Bar yAxisId="left" dataKey="progress" fill="#8884d8" name="Progress %" />
-                <Bar yAxisId="right" dataKey="count" fill="#82ca9d" name="Videos Watched" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-          
-          <div className="mt-6">
-            <h3 className="font-medium mb-3">Category Details</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white">
-                <thead>
-                  <tr>
-                    <th className="p-3 border-b text-left">Category</th>
-                    <th className="p-3 border-b text-right">Videos Watched</th>
-                    <th className="p-3 border-b text-right">Progress</th>
-                    <th className="p-3 border-b text-right">Last Watched</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {userData.categoriesWatched && userData.categoriesWatched.length > 0 ? (
-                    userData.categoriesWatched.map((category, index) => (
-                      <tr key={index}>
-                        <td className="p-3 border-b">{category.category}</td>
-                        <td className="p-3 border-b text-right">{category.count}</td>
-                        <td className="p-3 border-b text-right">
-                          <div className="flex items-center justify-end">
-                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className="bg-blue-600 h-2.5 rounded-full" 
-                                style={{ width: `${category.progress}%` }}
-                              ></div>
-                            </div>
-                            {category.progress}%
-                          </div>
-                        </td>
-                        <td className="p-3 border-b text-right">{category.lastWatched ? new Date(category.lastWatched).toLocaleDateString() : "N/A"}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    [
-                      { category: "Mathematics", count: 28, progress: 65, lastWatched: new Date() },
-                      { category: "Physics", count: 17, progress: 42, lastWatched: new Date() },
-                      { category: "Computer Science", count: 14, progress: 38, lastWatched: new Date() },
-                      { category: "Chemistry", count: 8, progress: 20, lastWatched: new Date() }
-                    ].map((category, index) => (
-                      <tr key={index}>
-                        <td className="p-3 border-b">{category.category}</td>
-                        <td className="p-3 border-b text-right">{category.count}</td>
-                        <td className="p-3 border-b text-right">
-                          <div className="flex items-center justify-end">
-                            <div className="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                              <div 
-                                className="bg-blue-600 h-2.5 rounded-full" 
-                                style={{ width: `${category.progress}%` }}
-                              ></div>
-                            </div>
-                            {category.progress}%
-                          </div>
-                        </td>
-                        <td className="p-3 border-b text-right">{category.lastWatched.toLocaleDateString()}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              No category data available yet
             </div>
-          </div>
+          )}
         </div>
       )}
       
@@ -349,19 +270,19 @@ const Profile = () => {
       {activeTab === 'history' && (
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-lg font-semibold mb-4">Watch History</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="p-3 border-b text-left">Video Title</th>
-                  <th className="p-3 border-b text-right">Watch Date</th>
-                  <th className="p-3 border-b text-center">Category</th>
-                  <th className="p-3 border-b text-right">Completion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userData.watchHistory && userData.watchHistory.length > 0 ? (
-                  userData.watchHistory.map((item, index) => (
+          {userData.watchHistory && userData.watchHistory.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr>
+                    <th className="p-3 border-b text-left">Video Title</th>
+                    <th className="p-3 border-b text-right">Watch Date</th>
+                    <th className="p-3 border-b text-center">Category</th>
+                    <th className="p-3 border-b text-right">Completion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userData.watchHistory.map((item, index) => (
                     <tr key={index}>
                       <td className="p-3 border-b">{item.videoTitle}</td>
                       <td className="p-3 border-b text-right">{item.watchDate}</td>
@@ -380,38 +301,15 @@ const Profile = () => {
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  [
-                    { videoTitle: "Introduction to Calculus", watchDate: "2024-10-18", percentCompleted: 100, category: "Mathematics" },
-                    { videoTitle: "Newton's Laws of Motion", watchDate: "2024-10-19", percentCompleted: 95, category: "Physics" },
-                    { videoTitle: "Introduction to Algorithms", watchDate: "2024-10-20", percentCompleted: 85, category: "Computer Science" },
-                    { videoTitle: "Quantum Physics Basics", watchDate: "2024-10-21", percentCompleted: 75, category: "Physics" },
-                    { videoTitle: "Linear Algebra Fundamentals", watchDate: "2024-10-22", percentCompleted: 90, category: "Mathematics" }
-                  ].map((item, index) => (
-                    <tr key={index}>
-                      <td className="p-3 border-b">{item.videoTitle}</td>
-                      <td className="p-3 border-b text-right">{item.watchDate}</td>
-                      <td className="p-3 border-b text-center">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{item.category}</span>
-                      </td>
-                      <td className="p-3 border-b text-right">
-                        <div className="flex items-center justify-end">
-                          <div className="w-20 bg-gray-200 rounded-full h-2.5 mr-2">
-                            <div 
-                              className="bg-green-600 h-2.5 rounded-full" 
-                              style={{ width: `${item.percentCompleted}%` }}
-                            ></div>
-                          </div>
-                          {item.percentCompleted}%
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              No watch history available yet
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -34,14 +34,23 @@ router.post("/signup", async (req, res) => {
     await newUser.save();
 
     // Generate JWT token
-    const token = jwt.sign({ userId: newUser._id, email: newUser.email }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { userId: newUser._id, email: newUser.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    res.status(201).json({ message: "User registered successfully", token });
+    res.status(201).json({
+      message: "User registered successfully",
+      userId: newUser._id, // Include userId in the response
+      token,
+    });
   } catch (error) {
     console.error("Signup Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 router.post("/signin", async (req, res) => {
   try {
