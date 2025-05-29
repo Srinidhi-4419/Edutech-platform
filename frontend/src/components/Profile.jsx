@@ -16,31 +16,35 @@ const Profile = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Simulate data loading for demo
+  // Get userId from localStorage or other source
+  const userId = "user123"; // This should come from your auth system
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        if (!userId) {
+          setError("User ID not found. Please login again.");
+          setLoading(false);
+          return;
+        }
+
         setLoading(true);
         
-        // Simulate API call
+        // Fetch user stats from backend
+        // const statsResponse = await axios.get(`http://localhost:3000/api/user-journey/stats/${userId}`);
+        
+        // For now, simulate API call with empty data to show real empty states
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Set some sample data - you can modify this to test empty states
+        // Process the data for the UI - this would normally come from your API
         const processedData = {
-          username: "learner123",
-          joinDate: new Date().toISOString().split('T')[0],
-          totalWatchTime: 150, // minutes
-          videosWatched: 12,
-          completionRate: 78,
-          categoriesWatched: [
-            { category: "Mathematics", count: 5, progress: 65 },
-            { category: "Physics", count: 4, progress: 42 },
-            { category: "Computer Science", count: 3, progress: 38 }
-          ],
-          watchHistory: [
-            { videoTitle: "Introduction to Calculus", watchDate: "2024-10-18", percentCompleted: 100, category: "Mathematics" },
-            { videoTitle: "Newton's Laws of Motion", watchDate: "2024-10-19", percentCompleted: 95, category: "Physics" }
-          ]
+          username: "learner123", // You might want to fetch this from a user profile API
+          joinDate: new Date().toISOString().split('T')[0], // Placeholder
+          totalWatchTime: 0, // statsResponse.data.totalWatchTime || 0,
+          videosWatched: 0, // statsResponse.data.videosWatched || 0,
+          completionRate: 0, // parseFloat(statsResponse.data.completionRate || 0),
+          categoriesWatched: [], // Array.isArray(statsResponse.data.categoriesWatched) ? statsResponse.data.categoriesWatched : [],
+          watchHistory: [] // Array.isArray(statsResponse.data.recentVideos) ? statsResponse.data.recentVideos : []
         };
         
         setUserData(processedData);
@@ -53,7 +57,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [userId]);
 
   // Process data for charts
   const generateMonthlyData = () => {
